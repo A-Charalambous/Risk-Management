@@ -1,0 +1,68 @@
+# The code calculates the VaR and CVaR for a single asset or a portfolio treated as a single entity. 
+# There is no need for covariance calculations since it assumes that we are working with the combined portfolio returns directly. 
+
+import numpy as np
+import pandas as pd
+
+np.random.seed(42)  # Set the seed for reproducibility
+
+# Generate synthetic returns for three assets over 252 trading days
+num_days = 252  # number of trading days in a year
+mean_returns = [0.0002, 0.0003, 0.0001]  # average daily returns for the assets
+std_devs = [0.01, 0.015, 0.012]  # standard deviations of the daily returns
+
+# Generate daily returns using a normal distribution
+returns_asset1 = np.random.normal(mean_returns[0], std_devs[0], num_days) # np.random.normal takes a mean, st dev and number of days as input.
+returns_asset2 = np.random.normal(mean_returns[1], std_devs[1], num_days)
+returns_asset3 = np.random.normal(mean_returns[2], std_devs[2], num_days)
+
+# Create a DataFrame containing the returns
+df_ret = pd.DataFrame({
+    'Asset1': returns_asset1, # each column in the dataframe will contain the returns of each asset. column 1 contains returns of asset 1 etc
+    'Asset2': returns_asset2,
+    'Asset3': returns_asset3
+})
+
+# Calculate the mean return across assets for each day
+df_ret_port = df_ret.mean(axis=1) # The axis=1 is there in order to calculate the mean across each row of the DataFrame
+                                  # so that we calculate the mean return for each day across all assets. i.e. the mean of the three asset returns per day.
+
+# Define the significance level (5% in this case)
+eps = 0.05
+
+# Calculate annualized volatility of the portfolio returns
+vol = df_ret_port.std() * np.sqrt(252) # Annual st dev = Daily st dev * square root of 252 days.
+
+# Calculate annualized downside deviation of the portfolio returns (for returns < 0)
+# down_vol provides a measure of the volatility of negative returns, which is useful for risk assessment,
+# and understanding more about the downside risk of the portfolio.
+
+down_vol = df_ret_port[df_ret_port < 0].std() * np.sqrt(252)  # This selects all the entries in the dataframe that are negative, 
+                                                              # and calculates the st. dev. and after that the result is annualised (by multiplying with the square root of 252 days) 
+
+# Calculate the daily VaR at the 5% significance level
+VaR = df_ret_port.quantile(eps)  # The quantile function returns the value below which a certain percentage of the data falls.
+                                 # The 5th percentile corresponds to the VaR at the 5% significance level, which represents the maximum loss that is not expected to be exceeded with a probability of 95%. 
+
+# Calculate the daily CVaR (expected shortfall) for returns less than or equal to VaR
+CVaR = df_ret_port[df_ret_port <= VaR].mean() # Calculates the mean of all returns that fall below VaR.
+                                              # Conditional Value at Risk (CVaR) is also known as Expected Shortfall (ES).
+# It provides information about the potential magnitude of losses in extreme scenarios.
+# CVaR does not rely on distributional assumptions (unlike Var). This makes it more robust and suitable for capturing risks associated with non-normal or asymmetrically distributed returns.
+
+
+# Print the results
+# The f before the opening quote indicates that this is an f-string,
+# and :.6f is a formatting specification that will format the value to 6 decimal places.
+
+print(f"Annualized Volatility: {vol:.6f}") 
+print(f"Annualized Downside Deviation: {down_vol:.6f}")
+print(f"Daily VaR at {eps*100}% significance level: {VaR:.6f}")
+print(f"Daily CVaR (Expected Shortfall): {CVaR:.6f}")
+
+
+#Results:
+#Annualized Volatility: 0.112828
+#Annualized Downside Deviation: 0.065460
+#Daily VaR at 5.0% significance level: -0.010617
+#Daily CVaR (Expected Shortfall): -0.014406
