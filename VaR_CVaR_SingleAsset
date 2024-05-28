@@ -64,5 +64,5 @@ print(f"Daily CVaR (Expected Shortfall): {CVaR:.6f}")
 #Results:
 #Annualized Volatility: 0.112828
 #Annualized Downside Deviation: 0.065460
-#Daily VaR at 5.0% significance level: -0.010617
+#Daily VaR at 5.0% significance level: -0.010617 
 #Daily CVaR (Expected Shortfall): -0.014406
