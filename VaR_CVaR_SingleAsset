@@ -1,5 +1,6 @@
 # The code calculates the VaR and CVaR for a single asset or a portfolio treated as a single entity. 
 # There is no need for covariance calculations since it assumes that we are working with the combined portfolio returns directly. 
+# Although the historical method is commonly used, it has significant drawbacks. The main problem is this method assumes that the future return distribution for a portfolio will be similar to that of the past. This may not be the case, especially during periods of high volatility and uncertainty. 
 
 import numpy as np
 import pandas as pd
